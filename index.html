@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Slonyara VPN — Quantum Privacy 2026</title>
+    
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    
+    <style>
+        /* === БАЗОВЫЕ НАСТРОЙКИ === */
+        :root { --accent: #00ffcc; --bg: #030305; --surface: #0a0a10; --text: #ffffff; --danger: #ff003c; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow-x: hidden; }
+
+        /* === ЭКРАН ПРИКРЫТИЯ (VPN ЛЕНДИНГ) === */
+        #safe-zone {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #030305 70%);
+            z-index: 1;
+        }
+
+        /* Премиум шапка */
+        header { padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; }
+        .logo-box { display: flex; align-items: center; gap: 10px; }
+        .logo-icon { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; box-shadow: 0 0 15px var(--accent); }
+        .logo-text { font-weight: 900; font-size: 22px; letter-spacing: 1px; }
+
+        /* Главный контент */
+        .hero { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 80px 20px; }
+        .badge { background: rgba(0, 255, 204, 0.1); color: var(--accent); padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; margin-bottom: 25px; border: 1px solid rgba(0,255,204,0.3); }
+        h1 { font-size: clamp(35px, 8vw, 70px); font-weight: 900; line-height: 1.1; margin-bottom: 20px; text-transform: uppercase; }
+        p.subtitle { color: #888; font-size: 18px; max-width: 600px; margin-bottom: 40px; line-height: 1.5; }
+
+        /* Кнопка-ловушка */
+        .download-btn {
+            background: var(--text); color: var(--bg); border: none; padding: 20px 50px; font-size: 18px; font-weight: 900; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; box-shadow: 0 10px 30px rgba(255,255,255,0.1); width: 100%; max-width: 350px;
+        }
+        .download-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(255,255,255,0.3); background: var(--accent); color: #000; }
+        
+        .stats { margin-top: 20px; font-size: 14px; color: #555; display: flex; flex-direction: column; gap: 5px; text-align: center; }
+        .counter { color: var(--accent); font-weight: bold; font-family: monospace; font-size: 18px; }
+
+        /* === ИНСТРУКЦИЯ === */
+        .how-it-works { padding: 60px 20px; background: var(--surface); text-align: center; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .how-it-works h2 { font-size: 32px; margin-bottom: 40px; font-weight: 900; }
+        .steps-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; max-width: 1000px; margin: 0 auto; }
+        .step { flex: 1; min-width: 250px; background: rgba(255,255,255,0.03); padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
+        .step-num { width: 40px; height: 40px; background: var(--accent); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; margin: 0 auto 15px; }
+        .step h3 { margin-bottom: 10px; font-size: 20px; }
+        .step p { color: #888; font-size: 14px; line-height: 1.6; }
+
+        /* === ТАРИФЫ === */
+        .pricing { padding: 80px 20px; text-align: center; }
+        .pricing h2 { font-size: 32px; margin-bottom: 15px; font-weight: 900; }
+        .pricing > p { color: #888; margin-bottom: 50px; }
+        .pricing-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; max-width: 1100px; margin: 0 auto; }
+        
+        .plan { background: var(--surface); padding: 40px 30px; border-radius: 20px; flex: 1; min-width: 280px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; transition: transform 0.3s; }
+        .plan:hover { transform: translateY(-10px); }
+        .plan.pro { border: 2px solid var(--accent); box-shadow: 0 0 40px rgba(0, 255, 204, 0.1); position: relative; }
+        .plan.pro::before { content: "ПОПУЛЯРНОЕ"; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; font-weight: 900; font-size: 12px; padding: 4px 12px; border-radius: 10px; }
+        
+        .plan h3 { font-size: 24px; margin-bottom: 10px; }
+        .price { font-size: 40px; font-weight: 900; margin-bottom: 20px; }
+        .price span { font-size: 16px; color: #888; font-weight: normal; }
+        .features { list-style: none; margin-bottom: 30px; text-align: left; flex-grow: 1; }
+        .features li { margin-bottom: 12px; color: #aaa; font-size: 15px; display: flex; align-items: center; gap: 10px; }
+        .features li::before { content: "✓"; color: var(--accent); font-weight: bold; }
+        
+        .plan-btn { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; }
+        .plan.pro .plan-btn { background: var(--accent); color: #000; border: none; }
+        .plan-btn:hover { background: #fff; color: #000; }
+
+        /* === ЭКРАН ХАОСА (ПРАНК) === */
+        #hell-zone { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999; display: none; overflow: hidden; cursor: none; }
+        
+        .glitch-bg { position: absolute; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,0,0,0.2) 3px, transparent 3px); pointer-events: none; z-index: 10000; }
+        .screamer-img { position: absolute; border: 3px solid var(--danger); box-shadow: 0 0 50px var(--danger); filter: contrast(2) saturate(2); object-fit: cover; z-index: 10005; }
+        .terminal-text { position: absolute; color: var(--danger); font-family: 'Courier New', monospace; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 0px #000; z-index: 10010; white-space: nowrap; pointer-events: none; }
+        .fatal-error { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: monospace; font-size: 8vw; color: #fff; background: var(--danger); padding: 20px 40px; font-weight: 900; z-index: 10020; text-align: center; border: 5px solid #fff; mix-blend-mode: difference; }
+
+        /* Анимации Хаоса */
+        .strobe-effect { animation: flashBg 0.1s infinite; }
+        @keyframes flashBg { 0% { background: #000; } 50% { background: var(--danger); } 100% { background: #fff; } }
+        .shake-effect { animation: violentShake 0.05s infinite; }
+        @keyframes violentShake { 0% { transform: translate(5px, 5px) rotate(0deg); } 50% { transform: translate(-5px, -5px) rotate(1deg); } 100% { transform: translate(5px, -5px) rotate(-1deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="safe-zone">
+        <header>
+            <div class="logo-box">
+                <div class="logo-icon"></div>
+                <div class="logo-text">SLONYARA</div>
+            </div>
+            <div style="font-size: 14px; font-weight: bold; color: #888;">v. 2026.4 PRO</div>
+        </header>
+
+        <main class="hero">
+            <div class="badge">🔥 Новая технология обхода блокировок</div>
+            <h1>Абсолютная<br>Свобода</h1>
+            <p class="subtitle">Установите зашифрованный туннель в один клик. Без логов, без ограничений скорости. Работает везде.</p>
+            
+            <button class="download-btn" onclick="triggerHell()">СКАЧАТЬ БЕСПЛАТНО</button>
+            
+            <div class="stats">
+                <span>Скачиваний за сегодня:</span>
+                <span class="counter" id="live-counter">1,452,301</span>
+                <span>⭐ 4.9/5 TrustScore</span>
+            </div>
+        </main>
+
+        <section class="how-it-works">
+            <h2>Как начать пользоваться?</h2>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <h3>Скачайте клиент</h3>
+                    <p>Выберите подходящий тариф ниже или начните с бесплатной версии. Загрузка займет всего пару секунд.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <h3>Установите профиль</h3>
+                    <p>Откройте файл и разрешите установку профиля квантового шифрования в настройках вашей системы.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <h3>Нажмите «Включить»</h3>
+                    <p>Одна кнопка отделяет вас от свободного интернета. Система автоматически подберет самый быстрый сервер.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="pricing">
+            <h2>Выберите свой уровень защиты</h2>
+            <p>Переходите на PRO для максимальной скорости и доступа к 120+ локациям.</p>
+            
+            <div class="pricing-grid">
+                <div class="plan">
+                    <h3>Basic</h3>
+                    <div class="price">$0<span>/мес</span></div>
+                    <ul class="features">
+                        <li>3 локации (США, Нидерланды, Япония)</li>
+                        <li>Скорость до 10 Мбит/с</li>
+                        <li>Базовое шифрование</li>
+                        <li>Реклама в приложении</li>
+                    </ul>
+                    <button class="plan-btn" onclick="triggerHell()">Получить бесплатно</button>
+                </div>
+                
+                <div class="plan pro">
+                    <h3>PRO Shield</h3>
+                    <div class="price">$4.99<span>/мес</span></div>
+                    <ul class="features">
+                        <li style="color: #fff;">120+ локаций по всему миру</li>
+                        <li style="color: #fff;">Безлимитная скорость (до 1 Гбит/с)</li>
+                        <li style="color: #fff;">Квантовое AES-256 шифрование</li>
+                        <li style="color: #fff;">Блокировщик рекламы и трекеров</li>
+                    </ul>
+                    <button class="plan-btn" onclick="triggerHell()">Оформить PRO</button>
+                </div>
+
+                <div class="plan">
+                    <h3>Quantum Family</h3>
+                    <div class="price">$12.99<span>/мес</span></div>
+                    <ul class="features">
+                        <li>Все фичи тарифа PRO</li>
+                        <li>До 7 устройств одновременно</li>
+                        <li>Выделенный IP-адрес</li>
+                        <li>Приоритетная поддержка 24/7</li>
+                    </ul>
+                    <button class="plan-btn" onclick="triggerHell()">Подключить семью</button>
+                </div>
+            </div>
+        </section>
+        
+        <footer style="padding: 40px; text-align: center; color: #555; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.05);">
+            © 2026 Slonyara Security Inc. Все права защищены.<br>
+            Использование сервиса означает согласие с Политикой конфиденциальности.
+        </footer>
+    </div>
+
+    <div id="hell-zone">
+        <div class="glitch-bg"></div>
+        <div class="fatal-error" id="main-error">SYSTEM<br>DESTROYED</div>
+    </div>
+
+    <script>
+        // Живой счетчик
+        let count = 1452301;
+        setInterval(() => {
+            count += Math.floor(Math.random() * 3) + 1;
+            document.getElementById('live-counter').innerText = count.toLocaleString('en-US');
+        }, 1200);
+
+        // ДВИЖОК ХАОСА
+        function triggerHell() {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+
+            // Прячем весь красивый лендинг
+            document.getElementById('safe-zone').style.display = 'none';
+            const hell = document.getElementById('hell-zone');
+            hell.style.display = 'block';
+            
+            hell.classList.add('shake-effect');
+            setTimeout(() => hell.classList.add('strobe-effect'), 2000);
+
+            // Звуки
+            const sounds = ['1.mp3', '2.mp3', '3.mp3', '4.mp3', '5.mp3', '6.mp3', '7.mp3'];
+            sounds.forEach((fileName, index) => {
+                setTimeout(() => {
+                    let audio = new Audio('sounds/' + fileName);
+                    audio.loop = true;
+                    audio.play().catch(()=>{});
+                }, index * 200);
+            });
+
+            // Картинки
+            const memes = ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg', '6.jpg', '7.jpg', '8.jpg', '9.jpg', '10.jpg'];
+            setInterval(() => {
+                const img = document.createElement('img');
+                img.src = 'images/' + memes[Math.floor(Math.random() * memes.length)];
+                img.className = 'screamer-img';
+                
+                const size = Math.floor(Math.random() * 400) + 150;
+                img.style.width = size + 'px';
+                img.style.height = size + 'px';
+                img.style.left = Math.random() * 90 + 'vw';
+                img.style.top = Math.random() * 90 + 'vh';
+                img.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`;
+                
+                hell.appendChild(img);
+                setTimeout(() => img.remove(), 150);
+            }, 50);
+
+            // Текст
+            const alerts = ["UPLOADING PHOTOS...", "FORMATTING C:/", "CAMERA HACKED", "LOCATION SENT", "YOU ARE WATCHED"];
+            setInterval(() => {
+                const text = document.createElement('div');
+                text.className = 'terminal-text';
+                text.innerText = alerts[Math.floor(Math.random() * alerts.length)];
+                text.style.left = Math.random() * 80 + 'vw';
+                text.style.top = Math.random() * 90 + 'vh';
+                hell.appendChild(text);
+                setTimeout(() => text.remove(), 400);
+            }, 100);
+
+            // Ошибка в центре
+            const fatalTexts = ["ERROR 404", "DATA LEAK", "SYSTEM FAILURE", "BYE BYE"];
+            setInterval(() => {
+                document.getElementById('main-error').innerHTML = fatalTexts[Math.floor(Math.random() * fatalTexts.length)];
+            }, 300);
+        }
+    </script>
+</body>
+</html>
